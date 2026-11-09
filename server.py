@@ -5,42 +5,39 @@ import typing
 from flask import Flask
 from flask import request
 
+import main
 
-def run_server(handlers: typing.Dict):
-    app = Flask("Battlesnake")
 
-    @app.get("/")
-    def on_info():
-        return handlers["info"]()
+app = Flask("Battlesnake")
 
-    @app.post("/start")
-    def on_start():
-        game_state = request.get_json()
-        handlers["start"](game_state)
-        return "ok"
+@app.get("/")
+def on_info():
+    return main.info()
 
-    @app.post("/move")
-    def on_move():
-        game_state = request.get_json()
-        return handlers["move"](game_state)
+@app.post("/start")
+def on_start():
+    game_state = request.get_json()
+    main.start(game_state)
+    return "ok"
 
-    @app.post("/end")
-    def on_end():
-        game_state = request.get_json()
-        handlers["end"](game_state)
-        return "ok"
+@app.post("/move")
+def on_move():
+    game_state = request.get_json()
+    return main.move(game_state)
 
-    @app.after_request
-    def identify_server(response):
-        response.headers.set(
-            "server", "battlesnake/github/starter-snake-python"
-        )
-        return response
+@app.post("/end")
+def on_end():
+    game_state = request.get_json()
+    main.end(game_state)
+    return "ok"
 
-    host = "0.0.0.0"
-    port = int(os.environ.get("PORT", "8000"))
+@app.after_request
+def identify_server(response):
+    response.headers.set(
+        "server", "battlesnake/github/starter-snake-python"
+    )
+    return response
 
-    logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-    print(f"\nRunning Battlesnake at http://{host}:{port}")
-    app.run(host=host, port=port)
+
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
